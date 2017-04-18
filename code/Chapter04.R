@@ -121,3 +121,44 @@ s7 <- ggplot(survey, aes(SmokeN))  + geom_bar() +
   xlab("Smoking") + ylab("")
 #grid.arrange(s1, s2, s3, s4, s5, s6, s7, ncol=3)
 plot_grid(s1,s2,s3,s4,s5,s6,s7,nrow = 3,ncol = 3)
+
+# Figure 4.9
+data(VonBort, package="vcd")
+ggplot(VonBort, aes(x=factor(deaths))) + geom_bar() +
+  xlab("Deaths by horse kick")
+# Is it Poisson distributed?
+gf <- goodfit(table(VonBort$deaths), type = "poisson")
+summary(gf)
+
+# Figure 4.10
+data(VonBort, package="vcd")
+h1 <- ggplot(VonBort[VonBort$year=="1891", ],
+             aes(x=factor(deaths))) + geom_bar()
+h2 <- ggplot(VonBort[VonBort$year=="1891", ],
+             aes(x=factor(deaths, levels=seq(0, 4)))) +
+  geom_bar() + scale_x_discrete(drop=FALSE)
+#grid.arrange(h1, h2, nrow=1)
+plot_grid(h1, h2, nrow = 1, ncol = 2)
+
+# Figure 4.11
+data(UKSoccer, package="vcd")
+summary(UKSoccer)
+PL <- data.frame(UKSoccer)
+summary(PL)
+lx <- c("0","1","2","3","4 or more")
+b1 <- ggplot(PL, aes(x=factor(Home), weight=Freq)) +
+  geom_bar(fill="firebrick1") +
+  ylab("") + xlab("Home Goals")  +
+  scale_x_discrete(labels=lx) +  ylim(0,150)
+b2 <- ggplot(PL, aes(x=factor(Away), weight=Freq)) +
+  geom_bar(fill="cyan1") +
+  ylab("") + xlab("Away Goals")  +
+  scale_x_discrete(labels=lx) + ylim(0,150)
+#grid.arrange(b1, b2, nrow=1)
+plot_grid(b1,b2,nrow = 1, ncol = 2)
+
+# Figure 4.12
+xx <- 1:9
+Ben <- data.frame(xx, pdf=log10(1+1/xx))
+ggplot(Ben, aes(factor(xx), weight=pdf)) + geom_bar() +
+  xlab("") + ylab("") + ylim(0,0.35)
