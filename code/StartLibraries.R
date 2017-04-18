@@ -6,3 +6,5 @@ library(GGally)
 library(vcd)
 library(extracat)
 library(cowplot)
+
+library(GDAdata)
