@@ -62,3 +62,51 @@ data(father.son, package="UsingR")
 ggplot(father.son, aes(fheight, sheight)) + geom_point() +
   geom_smooth(method="lm", colour="red", se=FALSE) +
   stat_smooth()
+
+# 5.5
+# weight by gender
+data(oly12, package="VGAMdata")
+ggplot(oly12, aes(Height, Weight)) + geom_point(size = 1) + facet_wrap(~Sex, ncol = 1)
+
+# Figure 5.11
+# subset of sports
+oly12JWW <- filter(oly12, Sport %in% c("Judo", "Weightlifting", "Wrestling"))
+ggplot(oly12JWW, aes(Height, Weight)) + geom_point(size = 1) +
+  facet_wrap(~Sport) + ggtitle("Weight and Height by Sport")
+# all sports
+oly12S <- within(oly12, Sport <- abbreviate(Sport, 12))
+ggplot(oly12S, aes(Height, Weight)) + geom_point(size = 1) +
+  facet_wrap(~Sport) + ggtitle("Weight and Height by Sport")
+
+# Figure 5.12
+data(crime.us, package="VGAMdata")
+crime.usR <- crime.us
+names(crime.usR) <- gsub("Rate", "", names(crime.usR))
+names(crime.usR)[19:20] <- c("Larceny", "MotorVTheft")
+ggpairs(crime.usR[c(13:16, 18:20)],
+        title = "Crime Rates in the USA",
+        diag = list(continuous='density'), 
+        axisLabels = 'none')
+
+# Figure 5.13
+data(bank, package="gclus")
+par(mar=c(1.1, 1.1, 1.1, 1.1))
+spm(select(bank, Length:Diagonal), pch=c(16, 16),
+    diagonal="histogram", smoother=FALSE,
+    reg.line=FALSE, groups=bank$Status)
+
+# cpairs
+library(gclus)
+judge.cor <- cor(USJudgeRatings)
+judge.color <- dmat.color(judge.cor)
+cpairs(USJudgeRatings, panel.colors = judge.color, pch=".", gap=0.5)
+
+# gpairs
+library(gpairs)
+data("Leaves")
+gpairs(Leaves[1:10], lower.pars = list(scatter='loess'))
+
+# pairs.mod
+library(SMPracticals)
+data("mathmarks")
+pairs.mod(mathmarks)
