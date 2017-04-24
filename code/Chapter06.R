@@ -1,4 +1,4 @@
-# Chapter 5
+# Chapter 6
 source('~/R Work/GDAwithR/code/StartLibraries.R')
 
 # Figure 6.1
