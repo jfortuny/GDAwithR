@@ -43,7 +43,8 @@ p1 <- ggplot(galton, aes(parent)) + geom_bar( binwidth=1) +
   xlim(60, 75) + ylim(0, 225) + ylab("") +
   geom_vline(xintercept=median(galton$parent),
              col="red")
-#grid.arrange(c1, p1)
+#
+grid.arrange(c1, p1)
 plot_grid(c1, p1, nrow = 2, ncol = 1)
 
 # Figure 3.4 reviseted with skinny bars

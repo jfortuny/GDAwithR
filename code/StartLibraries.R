@@ -5,7 +5,9 @@ library(ggthemes)
 library(GGally)
 library(vcd)
 library(extracat)
+
 library(cowplot)
+library(gridExtra)
 
 library(GDAdata)
 library(car)
