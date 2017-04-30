@@ -36,5 +36,18 @@ ihist(Cars93$Horsepower)
 iset.selected()
 sum(sign(iset.selected()))/length(Cars93$ Horsepower)
 
-iset.select(Cars93$Horsepower >= 200)
+iset.select(Cars93$Horsepower >= 240)
 Cars93[iset.selected(),]
+iset.select(Cars93$Horsepower > 0)
+
+# Color Brush
+ibar(Cars93$Cylinders)
+iplot(Cars93$MPG.city, Cars93$MPG.highway)
+
+# iObjects
+iplot(Cars93$EngineSize, Cars93$Horsepower)
+# select some points
+subs <- iset.selected()
+iabline(lm(Horsepower~EngineSize, data = Cars93[subs,]))
+
+# Conventions
