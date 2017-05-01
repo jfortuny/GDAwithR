@@ -117,3 +117,23 @@ ggparcoord(uniranks2[order(uniranks2$Rus, decreasing=TRUE),],
         axis.ticks.y = element_blank(),
         axis.text.y = element_blank()) +
   scale_colour_manual(values = c("grey","red"))
+
+# 6.7 Options for parallel coordinate plots
+# Alignment
+library(reshape2); data(nass.corn, package="agridat")
+head(nass.corn)
+c1 <- melt(nass.corn, id=c("year", "state"))
+head(c1)
+c1 <- within(c1, StateV <- interaction(state, variable))
+c2 <- dcast(c1, StateV~year)
+head(c2)
+str(c2)
+mz <- as.data.frame(apply(c2[1:48,2:147], 2,
+                          function(x) x - mean(x, na.rm = TRUE)))
+StateV <- c2[1:48,1]
+mzA <- as.data.frame(cbind(StateV, mz))
+ggparcoord(mzA, columns = 2:147, scale = "globalminmax",
+           groupColumn = "StateV") + 
+  xlab("Year") + ylab("Acres") +
+  scale_x_discrete(breaks=seq(1865,2015,10)) +
+  theme(legend.position = "none")
