@@ -137,3 +137,63 @@ ggparcoord(mzA, columns = 2:147, scale = "globalminmax",
   xlab("Year") + ylab("Acres") +
   scale_x_discrete(breaks=seq(1865,2015,10)) +
   theme(legend.position = "none")
+
+# Figure 6.12 - Scaling
+data(body, package="gclus")
+body1 <- body
+names(body1) <- abbreviate(names(body), 2)
+names(body1)[c(4:5, 11:13, 19:21)] <-  
+  c("CDp", "CD", "Ch", "Ws", "Ab", "Cl", "An", "Wr")
+a1 <- ggparcoord(body1, columns=1:24, alphaLines=0.1) +
+  xlab("") + ylab("")
+a2 <- ggparcoord(body1, columns=1:24, scale="uniminmax",
+                 alphaLines=0.1) + xlab("") + ylab("")
+a3 <- ggparcoord(body1, columns=1:24,
+                 scale="globalminmax", alphaLines=0.1) +
+  xlab("") + ylab("")
+a4 <- ggparcoord(body1, columns=1:24, scale="center",
+                 scaleSummary="median", alphaLines=0.1) +
+  xlab("") + ylab("")
+grid.arrange(a1, a2, a3, a4)
+
+# Figure 6.13 - Outliers
+# All Cases first
+data(food, package="MMST")
+ggparcoord(data = food, columns = c(1:7),
+           scale="uniminmax", missing="exclude",
+           alphaLines=0.3) + xlab("") + ylab("") +
+  ggtitle("All cases")
+# Remove all cases with outliers
+fc <- function(xv) {
+  bu <- boxplot(xv, plot=FALSE)$stats[5]
+  cxv <- ifelse(xv > bu, NA, xv)
+  bl <- boxplot(xv, plot=FALSE)$stats[1]
+  cxv <- ifelse(cxv < bl, NA, cxv)} 
+data(food, package="MMST")
+rxfood <- as.data.frame(apply(food,2,fc))
+ggparcoord(data = rxfood, columns = c(1:7),
+           scale="uniminmax", missing="exclude",
+           alphaLines=0.3) + xlab("") + ylab("") +
+  ggtitle("Remove all cases with outliers")
+# Trim all outliers to chosen limits
+fb <- function(xv) {
+  bu <- boxplot(xv, plot=FALSE)$stats[5]
+  rxv <- ifelse(xv > bu, bu, xv)
+  bl <- boxplot(xv, plot=FALSE)$stats[1]
+  rxv <- ifelse(rxv < bl, bl, rxv)} 
+data(food, package="MMST")
+rfood <- as.data.frame(apply(food,2,fb))
+ggparcoord(data = rfood, columns = c(1:7),
+           scale="uniminmax",
+           alphaLines=0.3) + xlab("") + ylab("") +
+  ggtitle("Chosen limits for outliers")
+# Restrict the plot to chosen limits
+fd <- function(xv) {
+  bu <- boxplot(xv, plot=FALSE)$stats[5]
+  bl <- boxplot(xv, plot=FALSE)$stats[1]
+  dxv <- (xv - bl)/(bu - bl)} 
+data(food, package="MMST")
+rofood <- as.data.frame(apply(food,2,fd))
+ggparcoord(data = rofood, columns = c(1:7)) + 
+  coord_cartesian(ylim=c(0,1)) + xlab("") + ylab("") +
+  ggtitle("Chosen limits")
