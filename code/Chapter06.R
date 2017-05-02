@@ -197,3 +197,77 @@ rofood <- as.data.frame(apply(food,2,fd))
 ggparcoord(data = rofood, columns = c(1:7)) + 
   coord_cartesian(ylim=c(0,1)) + xlab("") + ylab("") +
   ggtitle("Chosen limits")
+
+# Figure 6.14 - Variable Order
+data(body, package="gclus")
+body1 <- body
+names(body1) <- abbreviate(names(body), 2)
+body1$Gn <- factor(body1$Gn)
+ggparcoord(body1, columns=1:24, scale="uniminmax",
+           alphaLines=0.4, groupColumn="Gn",
+           order="allClass") + xlab("") + ylab("") +
+  theme(legend.position = "none",
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())
+
+# Figure 6.15
+a <- ggparcoord(body1[order(body1$Gn),], columns=c(1:24),
+                groupColumn="Gn", order="allClass",
+                scale="uniminmax")  + xlab("") +  ylab("") +
+  theme(legend.position = "none",
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank()) +
+  scale_colour_manual(values = c("grey","#00BFC4"))
+b <- ggparcoord(body1[order(body1$Gn, decreasing=TRUE),],
+                columns=c(1:24), groupColumn="Gn", order="allClass",
+                scale="uniminmax")  + xlab("") +  ylab("") +
+  theme(legend.position = "none",
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank()) +
+  scale_colour_manual(values = c("#F8766D","grey"))
+grid.arrange(a,b)
+
+# Figure 6.16
+m2 <- apply(body[, 1:24], 2, median, na.rm=TRUE)
+m2a <- order(m2)
+ggparcoord(data = select(body, -Gender), alphaLines=0.3,
+           scale="globalminmax", order=m2a) + coord_flip()
+# Figure 6.17
+library(reshape2)
+B1 <- ggparcoord(data = body1, columns=c(1:24), scale="std")
+B2 <- acast(B1$data[ ,c(1,3,4)], '.ID' ~ variable)
+m4 <- apply(B2, 2, max, na.rm=TRUE)
+m4r <- order(m4)
+ggparcoord(data = body1, alphaLines=0.3,
+           columns=c(1:24), scale="std", order=m4r)
+
+# Figure 6.18
+data(Boston, package="MASS")
+Boston1 <- within(Boston,
+                  hmedv <- factor(ifelse(medv == 50,"Top", "Rest")))
+Boston1 <- within(Boston1, mlevel <- ifelse(medv==50,1,0.1))
+Boston1 <- within(Boston1, medv1 <- medv)
+a <- ggparcoord(data = Boston1[order(Boston1$hmedv),],
+                columns=c(1:14), groupColumn="hmedv",
+                scale="uniminmax", alphaLines="mlevel",
+                mapping = aes(size = 1)) + xlab("") + ylab("") +
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())
+b <- ggparcoord(data = Boston1, columns=c(1:14),
+                groupColumn="medv1", scale="uniminmax") +
+  xlab("") + ylab("") +
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())
+grid.arrange(a,b)
+
+# Figure 6.19
+Boston1 <- Boston1 %>% mutate(
+  arad = factor(ifelse(rad < max(rad), 0, 1)), 
+  aLevel = ifelse(rad < max(rad), 0.1, 1))
+ggparcoord(data = Boston1, columns=c(1:14), 
+           scale="uniminmax", groupColumn= "arad",
+           alphaLines="aLevel", order="allClass") +
+  xlab("") + ylab("") +
+  theme(legend.position = "none",
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())
