@@ -71,3 +71,33 @@ Arthritis <- within(Arthritis,
 mosaic(Improved ~ Treatment1 + Sex, data = Arthritis,
        direction = c("v", "v", "h"),
        zero_size = 0)
+
+# Figure 7.10
+Allig3 <- aggregate(count~food + lake, data = Alligator, sum)
+head(Allig3)
+ggplot(Allig3, aes(food, count)) +
+  geom_bar(stat="identity") +
+  facet_grid(lake ~ .)
+
+# Figure 7.11
+# Top
+data(housing, package="MASS")
+head(housing)
+mosaic(xtabs(Freq ~ Cont + Type + Infl + Sat, data = housing),
+       direction = c("h", "v", "v", "h"), 
+       gp = gpar(fill = c("grey", "grey","red")),
+       spacing = spacing_highlighting)
+# Bottom
+rmb(formula = ~Type+Cont+Infl+Sat, data = housing, cat.ord = 3,
+    spine = TRUE, freq.trans = "const")
+
+# Figure 7.12
+# Top
+data(housing, package="MASS")
+rmb(formula = ~Type+Infl+Cont+Sat, data = housing,
+    col.vars = c(FALSE,TRUE,TRUE,FALSE),
+    label.opt = list(abbrev = 3, yaxis=FALSE))
+# Bottom
+rmb(formula = ~Type+Infl+Cont+Sat,  data = housing,
+    eqwidth=TRUE, col.vars = c(FALSE,TRUE,TRUE,FALSE),
+    label.opt = list(abbrev = 3, yaxis=FALSE))
