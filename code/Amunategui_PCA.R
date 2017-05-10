@@ -342,3 +342,51 @@ postResample(pred=predictions, obs=as.factor(ifelse(gisette_df_validate$cluster 
 # Not too bad
 # Accuracy     Kappa 
 # 0.9536667 0.9072691 
+
+
+# docs 05 ------------------------------------------------------------------
+load("./data/gisetteRaw.RData")
+load("./data/g_labels.RData")
+gisette_df <- cbind(as.data.frame(sapply(gisetteRaw, as.numeric)), cluster=g_labels$V1)
+
+# divide the data into TraintAndTest and Validate
+set.seed(1234)
+split <- sample(nrow(gisette_df), floor(0.5 * nrow(gisette_df)))
+gisette_df_train_test <- gisette_df[split,]
+gisette_df_validate <- gisette_df[-split,]
+
+# divide TraintAndTest into train and test
+set.seed(1234)
+split <- sample(nrow(gisette_df_train_test), floor(0.5 * nrow(gisette_df_train_test)))
+traindf <- gisette_df_train_test[split,]
+testdf <- gisette_df_train_test[-split,]
+
+# set the outcome and predictors' names
+outcome_name <- 'cluster'
+predictors_names <- setdiff(names(traindf), outcome_name)
+# caret requires a factor of non-numeric value
+traindf$cluster <- ifelse(traindf$cluster == 1, "yes", "no")
+traindf$cluster <- as.factor(traindf$cluster )
+# prepare for the model
+fitControl <- trainControl(method = "cv",
+                           number = 3,
+                           returnResamp = "none",
+                           verboseIter = FALSE,
+                           summaryFunction = twoClassSummary,
+                           classProbs = TRUE
+)
+glmnet_model <- train(
+          x=traindf[,predictors_names], y=traindf[,outcome_name],
+          data = traindf,
+          trControl = fitControl,
+          method = "glmnet",
+          metric = "ROC"
+          # ,maxit = 10^6
+)
+# Couldn't fit the model glmnet_model; errored out:
+# Error in glmnet(x = c(0, 0, 805, 0, 0, 0, 0, 836, 0, 0, 0, 0, 0, 878,  : 
+#                         unused argument (data = list(V1 = c(0, 0, 805, 0, 0, 0, 0, 836, 0, 0, 0, 0, 0, 878, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 666, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 987, 0, 0, 983, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 991, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 976, 0, 0, 0, 0, 0, 0, 0, 0, 980, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+#                                                             0, 0, 0, 0, 0, 0, 0, 805, 0, 614, 0, 0, 0, 0, 0, 0, 0, 601, 0, 0, 0, 0, 0, 0, 537, 0, 0, 0, 0, 0, 284, 0, 0, 944, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 722, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 501, 0, 0, 0, 0, 0, 0, 0, 539, 0, 0, 0, 0, 0, 991, 711, 0, 0, 403, 0, 0, 0, 983, 0, 0, 0, 620, 0, 0, 983, 0, 0, 0, 987, 0, 0, 983, 0, 0, 0, 0, 0, 0, 499, 0, 0, 444, 0, 0, 0, 0, 432, 0, 0, 0, 0, 0, 797, 0, 0, 0, 0, 0, 0, 0, 705, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 991, 0, 0, 0, 0, 0, 0, 0, 0, 0
+#                                                             In addition: There were 12 warnings (use warnings() to see them)
+#                                                             Timing stopped at: 171.25 0 171.25 
+
