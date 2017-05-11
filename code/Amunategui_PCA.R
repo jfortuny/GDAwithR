@@ -390,3 +390,107 @@ glmnet_model <- train(
 #                                                             In addition: There were 12 warnings (use warnings() to see them)
 #                                                             Timing stopped at: 171.25 0 171.25 
 
+
+# docs 06 ------------------------------------------------------------------
+load("./data/gisetteRaw.RData")
+load("./data/g_labels.RData")
+gisette_df <- cbind(as.data.frame(sapply(gisetteRaw, as.numeric)), cluster=g_labels$V1)
+dim(gisette_df)
+
+# de-duplicate columns
+gisette_df <- gisette_df[!duplicated(lapply(gisette_df, summary))]
+dim(gisette_df)
+# re-format outcome to 0,1 from -1,1
+gisette_df$cluster <- ifelse(gisette_df$cluster==-1,0,1)
+
+# divide the data into TraintAndTest and Validate
+set.seed(1234)
+split <- sample(nrow(gisette_df), floor(0.5 * nrow(gisette_df)))
+gisette_df_train_test <- gisette_df[split,]
+gisette_df_validate <- gisette_df[-split,]
+
+# divide TraintAndTest into train and test
+set.seed(1234)
+split <- sample(nrow(gisette_df_train_test), floor(0.5 * nrow(gisette_df_train_test)))
+traindf <- gisette_df_train_test[split,]
+testdf <- gisette_df_train_test[-split,]
+
+# call the mRMRe package
+library(mRMRe)
+mRMR_data <- mRMR.data(data = traindf)
+#mRMR_data
+feats <- mRMR.classic(data = mRMR_data, 
+                      target_indices = c(ncol(traindf)), # outcome variable
+                      feature_count = 20)
+bestVars <-data.frame('features'=names(traindf)[solutions(feats)[[1]]], 'scores'= scores(feats)[[1]])
+bestVars
+
+# fit with model glmnet (using caret)
+# subset the variables in the training datadrame to the best 20 found in bestVars
+# and append the outcome
+traindf_temp <- traindf[c(as.character(bestVars$features), 'cluster')]
+names(traindf_temp)
+# convert the outcome to non-numeric factor (caret requires it)
+traindf_temp$cluster <- ifelse(traindf_temp$cluster == 1, "yes", "no")
+traindf_temp$cluster <- as.factor(traindf_temp$cluster )
+# prepare for the model
+objControl <- trainControl(method = "cv",
+                           number = 3,
+                           returnResamp = "none",
+                           summaryFunction = twoClassSummary,
+                           classProbs = TRUE
+)
+glmnet_model <- train(
+  cluster~.,
+  data = traindf_temp,
+  trControl = objControl,
+  method = "glmnet",
+  metric = "ROC"
+)
+glmnet_model
+# predict
+glmnet_predictions <- predict(object=glmnet_model, 
+                              newdata= gisette_df_validate[,as.character(bestVars$features)], 
+                              type='raw')
+# Verify accuracy
+head(glmnet_predictions)
+head(gisette_df_validate$cluster)
+# We need to convert gisette_df_validate$cluster to "yes" and "no"
+postResample(pred=glmnet_predictions, 
+             obs=as.factor(ifelse(gisette_df_validate$cluster == 1,"yes", "no")))
+# Not too bad
+# Accuracy     Kappa 
+# 0.9173333 0.8346890
+
+# now fit with model knn
+knn_model <- train(       # name the model differently than glmnet
+  cluster~.,
+  data = traindf_temp,
+  trControl = objControl, # this has not changed from the glmnet run
+  method = "knn",         # this is all that changed
+  metric = "ROC"
+)
+knn_model
+# predict
+knn_predictions <- predict(object=knn_model, 
+                           newdata= gisette_df_validate[,as.character(bestVars$features)], 
+                           type='raw')
+# Verify accuracy
+head(knn_predictions)
+head(gisette_df_validate$cluster)
+# We need to convert gisette_df_validate$cluster to "yes" and "no"
+postResample(pred=knn_predictions, 
+             obs=as.factor(ifelse(gisette_df_validate$cluster == 1,"yes", "no")))
+# Even better than glmnet
+# Accuracy     Kappa 
+# 0.9306667 0.8613708 
+
+# use the ensemble method of the mRMRe library
+# ensemble example
+feats <- mRMR.ensemble(data = mRMR_data, 
+                       target_indices = c(ncol(traindf)),
+                       solution_count = 5,
+                       feature_count = 10)
+bestVars <-data.frame('features'=names(traindf)[solutions(feats)[[1]]], 
+                      'scores'= scores(feats)[[1]])
+bestVars
