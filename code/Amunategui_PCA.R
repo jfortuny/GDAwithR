@@ -1,4 +1,4 @@
-# Amunategui
+# Amunategui - PCA
 source('~/R Work/GDAwithR/code/StartLibraries.R')
 
 # PCA
