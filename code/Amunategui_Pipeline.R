@@ -76,3 +76,49 @@ head(Fix_Date_Features(mix_dataset))
 # Automating data exploration: raw text
 # doc 14 -----------------------------------------------------------------------------
 source('~/R Work/GDAwithR/code/PipelineFunctions.R')
+Titanic_dataset <- read.table('http://math.ucdenver.edu/RTutorial/titanic.txt', 
+                              sep='\t', 
+                              header=TRUE, 
+                              stringsAsFactors=FALSE)
+head(Titanic_dataset)
+# count words in Name
+Titanic_dataset_temp <- Titanic_dataset
+Titanic_dataset_temp$Word_Count <- sapply(strsplit(Titanic_dataset_temp$Name, " "), 
+                                          length)
+head(Titanic_dataset_temp$Word_Count)
+# count characters in Name
+Titanic_dataset_temp <- Titanic_dataset
+Titanic_dataset_temp$Character_Count <- nchar(as.character(Titanic_dataset_temp$Name))
+head(Titanic_dataset_temp$Character_Count)
+# Get the first word of Name
+Titanic_dataset_temp <- Titanic_dataset
+Titanic_dataset_temp$First_Word <- sapply(strsplit(as.character(Titanic_dataset_temp$Name), " "), `[`, 1)
+head(Titanic_dataset_temp$First_Word)
+# What features/variables are candidates to Categorization
+Titanic_dataset_temp <- Get_Free_Text_Measures(data_set = Titanic_dataset, 
+                                               features_to_ignore = c())
+str(Titanic_dataset_temp)
+
+# Automating data exploration: factors
+# doc 15 -----------------------------------------------------------------------------
+source('~/R Work/GDAwithR/code/PipelineFunctions.R')
+
+# binaryzing data - making dummy features
+Titanic_dataset <- read.table('http://math.ucdenver.edu/RTutorial/titanic.txt', 
+                              sep='\t', 
+                              header=TRUE, 
+                              stringsAsFactors=FALSE)
+head(Titanic_dataset)
+str(Titanic_dataset)
+dim(Titanic_dataset)
+
+# Sex and PClass are candidates to binarization
+str(Titanic_dataset)
+Titanic_dataset_temp <- Binarize_Features(data_set = Titanic_dataset, 
+                                          features_to_ignore = c('Name'))
+str(Titanic_dataset_temp)
+Titanic_dataset_temp <- Binarize_Features(data_set = Titanic_dataset, 
+                                          features_to_ignore = c('Name'),
+                                          leave_out_one_level = TRUE)
+str(Titanic_dataset_temp)
+# Or use caret::dummyVars
